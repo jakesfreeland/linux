@@ -134,7 +134,7 @@ int random_online_cpu(unsigned int cpu);
 #endif
 
 #ifndef MODULE
-extern const struct file_operations random_fops, urandom_fops;
+extern struct file_operations random_fops, urandom_fops;
 #endif
 
 #endif /* _LINUX_RANDOM_H */

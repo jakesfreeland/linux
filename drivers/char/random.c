@@ -1444,7 +1444,7 @@ static int random_fasync(int fd, struct file *filp, int on)
 	return fasync_helper(fd, filp, on, &fasync);
 }
 
-const struct file_operations random_fops = {
+struct file_operations random_fops = {
 	.read_iter = random_read_iter,
 	.write_iter = random_write_iter,
 	.poll = random_poll,
@@ -1456,7 +1456,7 @@ const struct file_operations random_fops = {
 	.splice_write = iter_file_splice_write,
 };
 
-const struct file_operations urandom_fops = {
+struct file_operations urandom_fops = {
 	.read_iter = urandom_read_iter,
 	.write_iter = random_write_iter,
 	.unlocked_ioctl = random_ioctl,

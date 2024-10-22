@@ -1371,6 +1371,13 @@ config CRYPTO_JITTERENTROPY_TESTINTERFACE
 
 	  If unsure, select N.
 
+config CRYPTO_JITTERENTROPY_DEV
+	bool "CPU Jitter RNG Character Device"
+	help
+	  Expose a character device frontend to the Jitter RNG engine. When
+	  read from, the device will return conditioned data that can act as
+	  a NIST SP800-90C compliant seed for deterministic RNG.
+
 endif	# if CRYPTO_FIPS && EXPERT
 
 if !(CRYPTO_FIPS && EXPERT)
@@ -1388,6 +1395,9 @@ config CRYPTO_JITTERENTROPY_OSR
 	default 1
 
 config CRYPTO_JITTERENTROPY_TESTINTERFACE
+	bool
+
+config CRYPTO_JITTERENTROPY_DEV
 	bool
 
 endif	# if !(CRYPTO_FIPS && EXPERT)

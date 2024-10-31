@@ -529,7 +529,8 @@ static int jent_measure_jitter(struct rand_data *ec, __u64 *ret_current_delta)
 	 * Get time stamp and calculate time delta to previous
 	 * invocation to measure the timing variations
 	 */
-	jent_get_nstime(&time);
+	if (!jent_ruin)
+		jent_get_nstime(&time);
 	current_delta = jent_delta(ec->prev_time, time);
 	ec->prev_time = time;
 

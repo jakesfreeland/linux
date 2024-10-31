@@ -21,6 +21,8 @@ extern struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
 						      void *hash_state);
 extern void jent_entropy_collector_free(struct rand_data *entropy_collector);
 
+extern int jent_ruin;
+
 #ifdef CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE
 int jent_raw_hires_entropy_store(__u32 value);
 void jent_testing_init(void);

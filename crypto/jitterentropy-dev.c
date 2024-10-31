@@ -248,6 +248,7 @@ static struct file_operations jent_fops = {
 };
 
 static int jent_enabled;
+int jent_ruin;
 
 static int jent_enable(char *str)
 {
@@ -279,6 +280,13 @@ static struct ctl_table jent_table[] = {
 		.maxlen		= sizeof(int),
 		.mode		= 0444,
 		.proc_handler	= proc_do_rointvec,
+	},
+	{
+		.procname	= "jent_ruin",
+		.data		= &jent_ruin,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
 	},
 };
 

@@ -117,7 +117,8 @@ static struct page *dma_direct_alloc_swiotlb(struct device *dev, size_t size)
 static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 		gfp_t gfp, bool allow_highmem)
 {
-	int node = dev_to_node(dev);
+	unsigned long nr_pages = PAGE_ALIGN(size) >> PAGE_SHIFT;
+	int node = dev_to_node(dev), order = get_order(size);
 	struct page *page = NULL;
 	u64 phys_limit;
 
@@ -130,17 +131,24 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 					   &phys_limit);
 	page = dma_alloc_contiguous(dev, size, gfp);
 	if (page) {
-		if (!dma_coherent_ok(dev, page_to_phys(page), size) ||
-		    (!allow_highmem && PageHighMem(page))) {
-			dma_free_contiguous(dev, page, size);
-			page = NULL;
-		}
-	}
-again:
-	if (!page)
-		page = alloc_pages_node(node, gfp, get_order(size));
-	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+		if (dma_coherent_ok(dev, page_to_phys(page), size) &&
+		    (allow_highmem || !PageHighMem(page)))
+			return page;
 		dma_free_contiguous(dev, page, size);
+	}
+
+again:
+	if (order >= MAX_ORDER)
+		page = alloc_contig_pages(nr_pages, gfp,
+				node != NUMA_NO_NODE ? node : numa_mem_id(),
+				&node_states[N_MEMORY]);
+	else
+		page = alloc_pages_node(node, gfp, order);
+	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+		if (order >= MAX_ORDER)
+			free_contig_range(page_to_pfn(page), nr_pages);
+		else
+			__free_pages(page, order);
 		page = NULL;
 
 		if (IS_ENABLED(CONFIG_ZONE_DMA32) &&

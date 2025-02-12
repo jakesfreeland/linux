@@ -403,13 +403,25 @@ extern gfp_t vma_thp_gfp_mask(struct vm_area_struct *vma);
 /* The below functions must be run on a range from a single zone. */
 extern int alloc_contig_range_noprof(unsigned long start, unsigned long end,
 			      unsigned migratetype, gfp_t gfp_mask);
-#define alloc_contig_range(...)			alloc_hooks(alloc_contig_range_noprof(__VA_ARGS__))
 
 extern struct page *alloc_contig_pages_noprof(unsigned long nr_pages, gfp_t gfp_mask,
 					      int nid, nodemask_t *nodemask);
-#define alloc_contig_pages(...)			alloc_hooks(alloc_contig_pages_noprof(__VA_ARGS__))
+#else
+static inline int alloc_contig_range_noprof(unsigned long start, unsigned long end,
+					    unsigned migratetype, gfp_t gfp_mask)
+{
+	return -ENOSYS;
+}
 
+static inline struct page *alloc_contig_pages_noprof(unsigned long nr_pages,
+						    gfp_t gfp_mask, int nid,
+						    nodemask_t *nodemask)
+{
+	return NULL;
+}
 #endif
+#define alloc_contig_range(...)			alloc_hooks(alloc_contig_range_noprof(__VA_ARGS__))
+#define alloc_contig_pages(...)			alloc_hooks(alloc_contig_pages_noprof(__VA_ARGS__))
 void free_contig_range(unsigned long pfn, unsigned long nr_pages);
 
 #ifdef CONFIG_CONTIG_ALLOC

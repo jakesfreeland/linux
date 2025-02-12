@@ -396,11 +396,12 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
  * This function releases memory allocated by dma_alloc_contiguous(). As the
  * cma_release returns false when provided pages do not belong to contiguous
  * area and true otherwise, this function then does a fallback __free_pages()
- * upon a false-return.
+ * or free_contig_range() (depending on order) upon a false-return.
  */
 void dma_free_contiguous(struct device *dev, struct page *page, size_t size)
 {
 	unsigned int count = PAGE_ALIGN(size) >> PAGE_SHIFT;
+	int order = get_order(size);
 
 	/* if dev has its own cma, free page from there */
 	if (dev->cma_area) {
@@ -423,7 +424,10 @@ void dma_free_contiguous(struct device *dev, struct page *page, size_t size)
 	}
 
 	/* not in any cma, free from buddy */
-	__free_pages(page, get_order(size));
+	if (order > MAX_PAGE_ORDER)
+		free_contig_range(page_to_pfn(page), count);
+	else
+		__free_pages(page, order);
 }
 
 /*

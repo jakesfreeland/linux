@@ -151,7 +151,13 @@ static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
 static inline void dma_free_contiguous(struct device *dev, struct page *page,
 		size_t size)
 {
-	__free_pages(page, get_order(size));
+	unsigned long nr_pages = PAGE_ALIGN(size) >> PAGE_SHIFT;
+	int order = get_order(size);
+
+	if (order > MAX_PAGE_ORDER)
+		free_contig_range(page_to_pfn(page), nr_pages);
+	else
+		__free_pages(page, order);
 }
 #endif /* CONFIG_DMA_CMA*/
 
